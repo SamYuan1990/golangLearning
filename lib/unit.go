@@ -1,25 +1,64 @@
 package lib
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
 
-type data struct {
-	array   []int
-	channel chan int
-	mutex   sync.Mutex
+type Data struct {
+	Array   []int
+	Channel chan int
+	Flag    int
+	Mutex   sync.Mutex
 }
 
-func (d *data) init() {
-	d.mutex.Lock()
-	d.channel = make(chan int)
-	d.mutex.Unlock()
+func (d *Data) Init() {
+	d.Mutex.Lock()
+	d.Channel = make(chan int, 10)
+	d.Mutex.Unlock()
 }
 
-func (d *data) arrayDataHandle(i int) {
-	d.mutex.Lock()
-	d.array = append(d.array, i)
-	d.mutex.Unlock()
+func (d *Data) ArrayDataHandle(i int) {
+	d.Mutex.Lock()
+	d.Flag = i
+	d.Array = append(d.Array, i)
+	d.Mutex.Unlock()
 }
 
-func (d *data) channelDataHandle(i int) {
-	d.channel <- i
+func (d *Data) ChannelDataHandle(i int) {
+	d.Flag = i
+	d.Channel <- i
+}
+
+type Processor struct {
+	No int
+}
+
+func (p *Processor) LoopChannel(input, output chan *Data, done <-chan struct{}) {
+	for {
+		select {
+		case r := <-input:
+			if r.Flag != p.No {
+				r.ArrayDataHandle(p.No)
+			}
+			output <- r
+		case <-done:
+			return
+		}
+	}
+}
+
+func (p *Processor) Checking(input, output chan *Data, done <-chan struct{}) {
+	for {
+		select {
+		case r := <-input:
+			if len(r.Array) < 2 {
+				output <- r
+			} else {
+				fmt.Println(r, r.Array)
+			}
+		case <-done:
+			return
+		}
+	}
 }
