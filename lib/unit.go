@@ -55,7 +55,7 @@ func (p *Processor) Checking(input, output chan *Data, done <-chan struct{}) {
 			if len(r.Array) < 2 {
 				output <- r
 			} else {
-				fmt.Println(r, r.Array)
+				fmt.Println("show data ", r, r.Array)
 			}
 		case <-done:
 			return

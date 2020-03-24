@@ -21,3 +21,11 @@ func testchannelDataHandle(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func Benchmark_sample(b *testing.B) {
+	d := &Data{}
+	d.Init()
+	for i := 0; i < b.N; i++ {
+		go d.ChannelDataHandle(i)
+	}
+}

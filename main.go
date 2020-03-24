@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -21,7 +22,7 @@ func waitGroup() {
 		}(i)
 	}
 	wg.Wait()
-	fmt.Println(len(d.Array))
+	fmt.Println("length of data add by wait group ", len(d.Array))
 }
 
 // pointer into mutiple channel
@@ -34,7 +35,7 @@ func pointerIntoMutipleChannel() {
 	channel2 <- d
 	d1 := <-channel1
 	d2 := <-channel2
-	fmt.Println(d1 == d2)
+	fmt.Println("if data in two channels are same ", d1 == d2)
 }
 
 // single summary channel
@@ -55,13 +56,13 @@ func singleSummaryChannel() {
 	for i := 0; i < 5; i++ {
 		data := &lib.Data{}
 		data.Init()
-		fmt.Println(data)
+		fmt.Println("create data ", data)
 		originChan <- data
 	}
 	time.Sleep(time.Duration(1) * time.Second)
 	close(done)
-	fmt.Println(len(originChan))
-	fmt.Println(len(checkChan))
+	fmt.Println("length of origin data ", len(originChan))
+	fmt.Println("length of data left ", len(checkChan))
 }
 
 // loop channel
@@ -92,14 +93,43 @@ func mutipleSummaryChannelWithPointer() {
 	d.Init()
 	channel1 <- d
 	channel2 <- d
+	fmt.Println("add data", d)
 	time.Sleep(time.Duration(1) * time.Second)
 	close(done)
-	fmt.Println(len(checkChan))
+	fmt.Println("length of data left ", len(checkChan))
 }
 
 func main() {
-	waitGroup()
-	pointerIntoMutipleChannel()
-	singleSummaryChannel()
-	mutipleSummaryChannelWithPointer()
+	str := os.Args[len(os.Args)-1]
+	showhelp := true
+	if str == "waitGroup" {
+		showhelp = false
+		waitGroup()
+	}
+	if str == "pointerIntoMutipleChannel" {
+		showhelp = false
+		pointerIntoMutipleChannel()
+	}
+	if str == "singleSummaryChannel" {
+		showhelp = false
+		singleSummaryChannel()
+	}
+	if str == "mutipleSummaryChannelWithPointer" {
+		showhelp = false
+		mutipleSummaryChannelWithPointer()
+	}
+	if str == "all" {
+		showhelp = false
+		waitGroup()
+		pointerIntoMutipleChannel()
+		singleSummaryChannel()
+		mutipleSummaryChannelWithPointer()
+	}
+	if showhelp {
+		fmt.Println("go run main.go waitGroup")
+		fmt.Println("go run main.go pointerIntoMutipleChannel")
+		fmt.Println("go run main.go singleSummaryChannel")
+		fmt.Println("go run main.go mutipleSummaryChannelWithPointer")
+		fmt.Println("go run main.go all")
+	}
 }
